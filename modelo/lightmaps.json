@@ -1,0 +1,32 @@
+{
+ "suelo": {
+  "archivo": "lm_suelo.webp",
+  "escala": 2.5036,
+  "objetos": 2
+ },
+ "muros": {
+  "archivo": "lm_muros.webp",
+  "escala": 4.2544,
+  "objetos": 42
+ },
+ "techo": {
+  "archivo": "lm_techo.webp",
+  "escala": 2.4986,
+  "objetos": 13
+ },
+ "barra": {
+  "archivo": "lm_barra.webp",
+  "escala": 8.9769,
+  "objetos": 15
+ },
+ "muebles": {
+  "archivo": "lm_muebles.webp",
+  "escala": 1.8175,
+  "objetos": 69
+ },
+ "maquinas": {
+  "archivo": "lm_maquinas.webp",
+  "escala": 2.7072,
+  "objetos": 110
+ }
+}

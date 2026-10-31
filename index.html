@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Arcade de la clase</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Chakra+Petch:wght@400;600&display=swap">
+<style>
+  /* Visor a pantalla completa con interfaz flotante; un solo tema oscuro, como el propio local. */
+  :root {
+    --bg: #07060c; --panel: rgba(12, 10, 22, 0.78); --line: rgba(255, 255, 255, 0.14);
+    --text: #f2eff8; --muted: #a59fb6; --rosa: #ff2a8a; --cian: #29c8ff;
+    --font-arcade: "Press Start 2P", "Courier New", monospace;
+    --font-ui: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-ui); overflow: hidden; }
+  body > canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+  /* viñeta suave, como en la cámara de un juego: guía la mirada al centro sin oscurecer la interfaz */
+  #vineta { position: fixed; inset: 0; pointer-events: none; background: radial-gradient(ellipse 75% 70% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.42) 100%); }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; backdrop-filter: blur(10px); }
+  #hud { position: fixed; top: calc(14px + env(safe-area-inset-top)); left: max(16px, env(safe-area-inset-left)); padding: 14px 16px; max-width: min(380px, calc(100vw - 32px)); display: grid; gap: 6px; }
+  #hud h1 { margin: 0; font-family: var(--font-arcade); font-size: 15px; line-height: 1.5; color: var(--rosa); text-shadow: 0 0 12px rgba(255, 42, 138, 0.8); font-weight: 400; }
+  #hud p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.45; }
+  kbd { font-family: var(--font-ui); background: rgba(255,255,255,0.1); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; color: var(--text); }
+  #lista { position: fixed; top: calc(14px + env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right)); padding: 12px; width: min(260px, 40vw); max-height: 60vh; overflow-y: auto; display: grid; gap: 6px; }
+  #lista b { font-family: var(--font-arcade); font-size: 10px; color: var(--cian); font-weight: 400; letter-spacing: 0.04em; }
+  #lista button { all: unset; cursor: pointer; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); font-size: 14px; display: grid; gap: 2px; }
+  #lista button span { color: var(--muted); font-size: 12px; }
+  #lista button:hover, #lista button:focus-visible { border-color: var(--cian); background: rgba(41, 200, 255, 0.08); }
+  #tip { position: fixed; pointer-events: none; padding: 8px 12px; font-size: 13px; transform: translate(14px, 14px); white-space: nowrap; }
+  #tip b { font-family: var(--font-arcade); font-size: 10px; color: var(--rosa); font-weight: 400; display: block; margin-bottom: 4px; }
+  /* globo de diálogo del empleado: flota sobre su cabeza (app.js lo recoloca en cada fotograma) */
+  #globo { position: fixed; left: 0; top: 0; pointer-events: none; padding: 10px 14px; width: max-content; max-width: min(280px, 70vw);
+           font-size: 14px; line-height: 1.4; transform: translate(-50%, calc(-100% - 10px)); border-color: rgba(41, 200, 255, 0.55); }
+  #globo b { font-family: var(--font-arcade); font-size: 9px; color: var(--cian); font-weight: 400; display: block; margin-bottom: 6px; }
+  #carga { position: fixed; inset: 0; display: grid; place-items: center; background: var(--bg); z-index: 20; }
+  #carga div { width: min(360px, 80vw); display: grid; gap: 14px; text-align: center; }
+  #carga span { font-family: var(--font-arcade); font-size: 12px; color: var(--cian); }
+  #barra { height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+  #barra i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--rosa), var(--cian)); }
+  #juego { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; background: rgba(4, 3, 8, 0.82); padding: 16px; }
+  #marco { width: min(960px, 94vw); display: grid; gap: 10px; padding: 14px; border-radius: 16px; background: #0d0b16;
+           border: 2px solid var(--rosa); box-shadow: 0 0 30px rgba(255, 42, 138, 0.45), inset 0 0 20px rgba(41, 200, 255, 0.15); }
+  #marco header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  #marco h2 { margin: 0; font-family: var(--font-arcade); font-size: 14px; color: var(--rosa); font-weight: 400; line-height: 1.5; }
+  #marco header p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+  #marco .botones { display: flex; gap: 8px; }
+  #marco button { font: inherit; font-size: 14px; color: var(--text); background: rgba(255,255,255,0.08); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; cursor: pointer; }
+  #marco button:hover, #marco button:focus-visible { border-color: var(--cian); }
+  #pantalla { position: relative; width: 100%; aspect-ratio: 4 / 3; max-height: 72vh; margin-inline: auto; background: #000; border-radius: 8px; overflow: hidden; }
+  #pantalla iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  #pronto { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; font-family: var(--font-arcade); font-size: 14px; line-height: 2; color: var(--cian); padding: 20px; }
+  #ayuda { color: var(--muted); font-size: 13px; margin: 0; }
+  @media (max-width: 640px) { #lista { display: none; } #hud p.desk { display: none; } }
+  @media (max-height: 420px) { #hud p { display: none; } #lista { max-height: 40vh; } #marco { padding: 8px; gap: 6px; } #ayuda { display: none; } }
+</style>
+</head>
+<body>
+<div id="vineta"></div>
+<div id="carga"><div><span>CARGANDO ARCADE…</span><div id="barra"><i></i></div></div></div>
+<div id="hud" class="panel">
+  <h1 id="titulo">ARCADE</h1>
+  <p class="desk">Muévete con <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> o haz clic en el suelo; gira con <kbd>←</kbd><kbd>→</kbd> o arrastrando.</p>
+  <p>Toca el suelo para caminar y una máquina para jugar.</p>
+</div>
+<nav id="lista" class="panel" aria-label="Juegos"><b>JUEGOS</b></nav>
+<div id="tip" class="panel" hidden></div>
+<div id="globo" class="panel" hidden aria-live="polite"></div>
+<div id="juego" hidden>
+  <div id="marco">
+    <header>
+      <div><h2 id="jTitulo"></h2><p id="jAutor"></p></div>
+      <div class="botones"><button id="jFull">Pantalla completa</button><button id="jSalir">Salir (Esc)</button></div>
+    </header>
+    <div id="pantalla"><div id="pronto" hidden>PROXIMAMENTE<br>¡TU JUEGO AQUI!</div></div>
+    <p id="ayuda"></p>
+  </div>
+</div>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+               "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
+</script>
+<script type="module" src="app.js"></script>
+</body>
+</html>

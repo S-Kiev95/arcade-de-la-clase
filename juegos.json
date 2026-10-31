@@ -1,0 +1,22 @@
+{
+  "titulo": "Arcade de la clase",
+  "nota": "Cada entrada asigna un juego (build de pygbag) a una máquina del 1 al 22, o al pinball con \"maquina\": \"pinball\". Las máquinas sin juego muestran PRÓXIMAMENTE.",
+  "juegos": [
+    {
+      "maquina": 7,
+      "titulo": "Serpiente Neon",
+      "autor": "Ejemplo del profe",
+      "url": "juegos/serpiente/index.html",
+      "portada": "",
+      "controles": "Flechas o WASD. Espacio para reiniciar."
+    },
+    {
+      "maquina": "pinball",
+      "titulo": "Neon Pinball",
+      "autor": "Ejemplo del profe",
+      "url": "juegos/pinball/index.html",
+      "aspecto": "3/4",
+      "controles": "Z o flecha izq.: flipper izquierdo · M o flecha der.: flipper derecho · Espacio (mantener y soltar): lanzar la bola."
+    }
+  ]
+}
